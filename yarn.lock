@@ -379,6 +379,14 @@ fast-stable-stringify@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/fast-stable-stringify/-/fast-stable-stringify-0.2.0.tgz#ac58db548bcde75d66d7e244e73f56c034a4b3da"
 
+faster-stable-stringify-2@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/faster-stable-stringify-2/-/faster-stable-stringify-2-1.0.0.tgz#83a409d1780686f6a8972881540ed14f90a64919"
+
+faster-stable-stringify@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/faster-stable-stringify/-/faster-stable-stringify-1.0.0.tgz#5dad92bffcadff8405a42b0965b033fe957d919c"
+
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"

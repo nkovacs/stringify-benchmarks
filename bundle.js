@@ -2826,7 +2826,7 @@
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"lodash":7,"platform":8}],2:[function(require,module,exports){
+},{"lodash":9,"platform":10}],2:[function(require,module,exports){
 var toString = {}.toString,
 	isArray = Array.isArray || function(obj){
 		return toString.call(obj) === "[object Array]";
@@ -2918,6 +2918,220 @@ function sss(val) {
 }
 
 },{}],3:[function(require,module,exports){
+'use strict';
+
+function stableStringifyImpl(value, replacer, cycles, keyOrIndex) {
+  if (replacer) {
+    value = replacer('', value);
+  }
+  if (value != null) {
+    var toJSON = value.toJSON;
+    if (typeof toJSON === 'function') {
+      value = toJSON.call(value, keyOrIndex);
+    }
+  }
+
+  if (typeof value === 'object') {
+    if (value instanceof Number) {
+      value = Number(value);
+    } else if (value instanceof String) {
+      value = String(value);
+    } else if (value instanceof Boolean) {
+      value = value.valueOf();
+    }
+  }
+
+  if (value === null) {
+    return 'null';
+  }
+
+  if (value === true) {
+    return 'true';
+  }
+
+  if (value === false) {
+    return 'false';
+  }
+
+  if (typeof value === 'string') {
+    return JSON.stringify(value);
+  }
+
+  if (typeof value === 'number') {
+    if (isFinite(value)) {
+      return String(value);
+    } else {
+      return 'null';
+    }
+  }
+
+  var i, str, comma;
+  if (Array.isArray(value)) {
+    if (cycles.has(value)) {
+      return '"[Circular]"';
+    } else {
+      cycles.add(value);
+      str = '[';
+      comma = false;
+      for (i = 0; i < value.length; ++i) {
+        var item = stableStringifyImpl(value[i], replacer, cycles, i);
+        if (comma) {
+          str += ',';
+        } else {
+          comma = true;
+        }
+        if (item === undefined) {
+          str += 'null';
+        } else {
+          str += item;
+        }
+      }
+      str += ']';
+      cycles.delete(value);
+      return str;
+    }
+  } else if (typeof value === 'object') {
+    if (cycles.has(value)) {
+      return '"[Circular]"';
+    } else {
+      cycles.add(value);
+      str = '{';
+      comma = false;
+      var keys = Object.keys(value).sort();
+      for (i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        var val = stableStringifyImpl(value[key], replacer, cycles, key);
+        if (val === undefined) {
+          continue;
+        }
+        if (comma) {
+          str += ',';
+        } else {
+          comma = true;
+        }
+        str += JSON.stringify(key) + ':' + val;
+      }
+      str += '}';
+      cycles.delete(value);
+      return str;
+    }
+  } else {
+    return undefined;
+  }
+}
+
+module.exports = function stableStringify(value, replacer) {
+  if (typeof replacer !== 'function') {
+    replacer = null;
+  }
+  return stableStringifyImpl(value, replacer, new WeakSet(), '');
+};
+
+},{}],4:[function(require,module,exports){
+'use strict';
+
+function stableStringifyImpl(value, cycles, keyOrIndex) {
+  if (value != null) {
+    var toJSON = value.toJSON;
+    if (typeof toJSON === 'function') {
+      value = toJSON.call(value, keyOrIndex);
+    }
+  }
+
+  if (typeof value === 'object') {
+    if (value instanceof Number) {
+      value = Number(value);
+    } else if (value instanceof String) {
+      value = String(value);
+    } else if (value instanceof Boolean) {
+      value = value.valueOf();
+    }
+  }
+
+  if (value === null) {
+    return 'null';
+  }
+
+  if (value === true) {
+    return 'true';
+  }
+
+  if (value === false) {
+    return 'false';
+  }
+
+  if (typeof value === 'string') {
+    return JSON.stringify(value);
+  }
+
+  if (typeof value === 'number') {
+    if (isFinite(value)) {
+      return String(value);
+    } else {
+      return 'null';
+    }
+  }
+
+  var i, str, comma;
+  if (Array.isArray(value)) {
+    if (cycles.has(value)) {
+      return '"[Circular]"';
+    } else {
+      cycles.add(value);
+      str = '[';
+      comma = false;
+      for (i = 0; i < value.length; ++i) {
+        var item = stableStringifyImpl(value[i], cycles, i);
+        if (comma) {
+          str += ',';
+        } else {
+          comma = true;
+        }
+        if (item === undefined) {
+          str += 'null';
+        } else {
+          str += item;
+        }
+      }
+      str += ']';
+      cycles.delete(value);
+      return str;
+    }
+  } else if (typeof value === 'object') {
+    if (cycles.has(value)) {
+      return '"[Circular]"';
+    } else {
+      cycles.add(value);
+      str = '{';
+      comma = false;
+      var keys = Object.keys(value).sort();
+      for (i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        var val = stableStringifyImpl(value[key], cycles, key);
+        if (val === undefined) {
+          continue;
+        }
+        if (comma) {
+          str += ',';
+        } else {
+          comma = true;
+        }
+        str += JSON.stringify(key) + ':' + val;
+      }
+      str += '}';
+      cycles.delete(value);
+      return str;
+    }
+  } else {
+    return undefined;
+  }
+}
+
+module.exports = function stableStringify(value) {
+  return stableStringifyImpl(value, new WeakSet(), '');
+};
+
+},{}],5:[function(require,module,exports){
 var json = typeof JSON !== 'undefined' ? JSON : require('jsonify');
 
 module.exports = function (obj, opts) {
@@ -3003,11 +3217,11 @@ var objectKeys = Object.keys || function (obj) {
     return keys;
 };
 
-},{"jsonify":4}],4:[function(require,module,exports){
+},{"jsonify":6}],6:[function(require,module,exports){
 exports.parse = require('./lib/parse');
 exports.stringify = require('./lib/stringify');
 
-},{"./lib/parse":5,"./lib/stringify":6}],5:[function(require,module,exports){
+},{"./lib/parse":7,"./lib/stringify":8}],7:[function(require,module,exports){
 var at, // The index of the current character
     ch, // The current character
     escapee = {
@@ -3282,7 +3496,7 @@ module.exports = function (source, reviver) {
     }({'': result}, '')) : result;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
     escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
     gap,
@@ -3438,7 +3652,7 @@ module.exports = function (value, replacer, space) {
     return str('', {'': value});
 };
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -20526,7 +20740,7 @@ module.exports = function (value, replacer, space) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (global){
 /*!
  * Platform.js <https://mths.be/platform>
@@ -21747,13 +21961,21 @@ module.exports = function (value, replacer, space) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var Benchmark = require('benchmark');
 var fast = require('fast-stable-stringify');
-var stable = require('json-stable-stringify');
+var faster = require('faster-stable-stringify');
+var faster2 = require('faster-stable-stringify-2');
+var stableStringify = require('json-stable-stringify');
+
+var stable = function(data, replacer) {
+	return stableStringify(data, {
+		replacer: replacer
+	});
+}
 
 // benchmark is buggy.
-if (window) {
+if (typeof window !== 'undefined') {
 	window.Benchmark = Benchmark;
 }
 
@@ -21783,6 +22005,23 @@ var result = 0;
 	},
 	onComplete: function() {
 		console.log('Fastest is ' + this.filter('fastest').map('name'));
+
+		console.log('JSON.stringify:');
+		console.log(JSON.stringify(args, replacer));
+		console.log('');
+		console.log('nickyout/fast-stable-stringify:')
+		console.log(fast(args, replacer));
+		console.log('');
+		console.log('ppaskaris/faster-stable-stringify:')
+		console.log(faster(args, replacer));
+		console.log('');
+		console.log('nkovacs/faster-stable-stringify-2:')
+		console.log(faster2(args, replacer));
+		console.log('');
+		console.log('substack/json-stable-stringify:')
+		console.log(stable(args, replacer));
+		console.log('');
+
 	}
 }))
 .add('JSON.stringify', function() {
@@ -21790,9 +22029,23 @@ var result = 0;
 })
 .add('nickyout/fast-stable-stringify', function() {
 	try {
-		result += fast(args).length;
+		result += fast(args, replacer).length;
 	} catch (err) {
 		console.log('fast', err);
+	}
+})
+.add('ppaskaris/faster-stable-stringify', function() {
+	try {
+		result += faster(args, replacer).length;
+	} catch (err) {
+		console.log('faster', err);
+	}
+})
+.add('nkovacs/faster-stable-stringify-2', function() {
+	try {
+		result += faster2(args, replacer).length;
+	} catch (err) {
+		console.log('faster2', err);
 	}
 })
 .add('substack/json-stable-stringify', function() {
@@ -21805,4 +22058,4 @@ var result = 0;
 .run({ 'async': true })
 ;
 
-},{"benchmark":1,"fast-stable-stringify":2,"json-stable-stringify":3}]},{},[9]);
+},{"benchmark":1,"fast-stable-stringify":2,"faster-stable-stringify":4,"faster-stable-stringify-2":3,"json-stable-stringify":5}]},{},[11]);
