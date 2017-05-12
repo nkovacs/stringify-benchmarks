@@ -1,0 +1,20 @@
+{
+  "name": "stringify-bench",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node src/index.js",
+    "build": "browserify src/index.js -o bundle.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browserify": "^14.3.0"
+  },
+  "dependencies": {
+    "benchmark": "^2.1.4",
+    "fast-stable-stringify": "^0.2.0",
+    "json-stable-stringify": "^1.0.1"
+  }
+}
